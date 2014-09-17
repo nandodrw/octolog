@@ -3,20 +3,21 @@
   "version": "0.0.0",
   "description": "",
   "keywords": [],
-  
-    "homepage": "https://github.com/nandodrw/octolog",
-    "bugs": "https://github.com/nandodrw/octolog/issues",
-    "author": {
-      "name": "Fernando",
-      "email": "",
-      "url": "https://github.com/nandodrw"
-    },
-    "repository": {
-      "type": "git",
-      "url": "git://github.com/nandodrw/octolog.git"
-    },
-  
-  "dependencies": {},
+  "homepage": "https://github.com/nandodrw/octolog",
+  "bugs": "https://github.com/nandodrw/octolog/issues",
+  "author": {
+    "name": "Fernando",
+    "email": "",
+    "url": "https://github.com/nandodrw"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nandodrw/octolog.git"
+  },
+  "dependencies": {
+    "angular": "^1.2.23",
+    "angular-route": "^1.2.17-build.163.1"
+  },
   "devDependencies": {
     "grunt": "~0.4.5",
     "grunt-contrib-concat": "~0.4.0",
