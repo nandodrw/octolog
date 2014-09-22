@@ -1,26 +1,27 @@
 'use strict';
 
-angular.module('octolog.login', ['ngRoute','satellizer'])
+angular.module('octolog.login', ['ngRoute','octoblogServices'])
 
-.config(['$routeProvider','$authProvider',
-	function(
-		$routeProvider,
-		$authProvider
-	){
-  $routeProvider.when('/login', {
-    templateUrl: '_login/login.html',
-    controller: 'LoginCtrl'
-  });
+.config(['$routeProvider',
+  	function($routeProvider){
+      $routeProvider.when('/login', {
+        templateUrl: '_login/login.html',
+        controller: 'LoginCtrl'
+      });
+    }
+  ])
 
- 	$authProvider.github({
-    clientId: '4c644f97c8d114736503'
-	});
+.controller('LoginCtrl', ['$scope','$http','githubService',function($scope,$http,githubService) {
+  $scope.login = function(){
 
-}])
+    octoblogServices.generateToken($scope.name,$scope.pass).
+    then(function(response){
+      console.log('nice',response);
+    },function(err){
+      console.log('error',err);
+    });
 
-.controller('LoginCtrl', ['$scope','$auth',function($scope,$auth) {
-	$scope.authenticate = function(provider) {
-    $auth.authenticate(provider);
-  };
-
+  }
 }]);
+
+
