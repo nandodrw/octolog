@@ -11,17 +11,42 @@ angular.module('octolog.login', ['ngRoute','octoblogServices'])
     }
   ])
 
-.controller('LoginCtrl', ['$scope','$http','githubService',function($scope,$http,githubService) {
+.controller('LoginCtrl',
+[
+'$scope',
+'$http',
+'githubService',
+'dataService',
+'sessionService',
+'$location',
+function
+  (
+    $scope,
+    $http,
+    githubService,
+    dataService,
+    sessionService,
+    $location
+  )
+{
+
   $scope.login = function(){
 
-    octoblogServices.generateToken($scope.name,$scope.pass).
+    githubService.generateToken($scope.user,$scope.pass).
     then(function(response){
-      console.log('nice',response);
+      sessionService.currentUser.name = $scope.user;
+      sessionService.currentUser.token = response.token;
+      return dataService.storeToken($scope.user,response.token);
     },function(err){
-      console.log('error',err);
+      return false;
+    }).
+    then(function(response){
+      console.log('nice!',response);
+      $location.path('/timeline');
+    },function(){
+      console.log('err!!');
     });
-
-  }
+  };
 }]);
 
 
