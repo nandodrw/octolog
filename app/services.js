@@ -74,7 +74,6 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 	        	var valueStr = pageData[i].substring(pageData[i].search('page=')+ 5,pageData[i].search('>;'));
 	        	pageDataObj[key] = parseInt(valueStr);
 	        };
-	        window.parseData = data;
 	        deferred.resolve(data,pageDataObj);
 	    }).
 	    error(function(data, status, headers, config) {
