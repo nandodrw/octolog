@@ -11,13 +11,13 @@ angular.module('octolog.timeline', ['ngRoute','octoblogServices'])
     }
   ]).
 
-controller('timelineCtr',['sessionService','githubService',function(sessionService,githubService){
+controller('timelineCtr',['sessionService','githubService','$scope',function(sessionService,githubService,$scope){
 
 	$scope.user = sessionService.currentUser;
 
-	// githubService
-
-	// $scope.commits =
-
+	githubService.getUserEvents($scope.user.name,$scope.user.token,2).
+	then(function(response){
+		$scope.commits = response;
+	});
 
 }]);
