@@ -50,13 +50,38 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 	        	var valueStr = pageData[i].substring(pageData[i].search('page=')+ 5,pageData[i].search('>;'));
 	        	pageDataObj[key] = parseInt(valueStr);
 	        };
-	        window.pages = pageDataObj;
+	        window.parseData = data;
 	        deferred.resolve(data,pageDataObj);
 	    }).
 	    error(function(data, status, headers, config) {
 	       deferred.reject(data);
 	    });
 	    return deferred.promise;
+		},
+
+		getCommitsFromEvents: function(eventsObj){
+			var deferred = $q.defer();
+			var commitCollection = [];
+			for(var i in eventsObj){
+				// console.log('event',eventsObj[i]);
+				if(eventsObj[i].type == "PushEvent"){
+					var repo = {};
+					repo.repoId = eventsObj[i].repo.id;
+					repo.repoName = eventsObj[i].repo.name;
+					// console.log('repo!',repo);
+					for(var j in eventsObj[i].payload.commits){
+						var commit = {};
+						commit.repo = repo;
+						commit.pushDate = eventsObj[i].created_at;
+						commit.sha = eventsObj[i].payload.commits[j].sha;
+						commit.message = eventsObj[i].payload.commits[j].message;
+						console.log('commit',commit);
+						commitCollection.push(commit);
+					};
+				};
+			};
+			deferred.resolve(commitCollection);
+			return deferred.promise;
 		}
 	}
 }]);
