@@ -8,6 +8,31 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 		client_secret : "450d19e3dcfb2193aa68e45a1c0d2f422c013185"
 	};
 
+	var transformEventData = function (eventsObj){
+		var commitCollection = [];
+		for(var i in eventsObj){
+			if(eventsObj[i].type == "PushEvent"){
+				var repo = {};
+				repo = eventsObj[i].repo;
+				for(var j in eventsObj[i].payload.commits){
+					var commit = {};
+					commit.repo = repo;
+					commit.pushDate = eventsObj[i].created_at;
+					commit.sha = eventsObj[i].payload.commits[j].sha;
+					commit.message = eventsObj[i].payload.commits[j].message;
+					commitCollection.push(commit);
+				};
+			};
+		};
+		return commitCollection;
+	};
+
+	var getCommitDetail = function (token,sha,repo){
+		var url_req = repo.url + '/git/commits/' + sha;
+		var authorization = 'token ' + token;
+		return $http({method: 'GET', url: url_req,headers : {'Authorization' : authorization}});
+	};
+
 	return {
 		generateToken: function(user,pass){
 			var deferred = $q.defer();
@@ -40,7 +65,6 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 	    	page : dataPage,
 	    };
 	    var myJSONText = JSON.stringify(params_req);
-	    console.log(myJSONText);
 			$http({method: 'GET', url: url_req,headers : {'Authorization' : authorization}, params : params_req}).
 	    success(function(data, status, headers, config) {
 	        var pageData = headers('Link').split(",");
@@ -59,28 +83,23 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 	    return deferred.promise;
 		},
 
-		getCommitsFromEvents: function(eventsObj){
+		getCommitsFromEvents: function(token,eventsObj){
 			var deferred = $q.defer();
-			var commitCollection = [];
-			for(var i in eventsObj){
-				// console.log('event',eventsObj[i]);
-				if(eventsObj[i].type == "PushEvent"){
-					var repo = {};
-					repo.repoId = eventsObj[i].repo.id;
-					repo.repoName = eventsObj[i].repo.name;
-					// console.log('repo!',repo);
-					for(var j in eventsObj[i].payload.commits){
-						var commit = {};
-						commit.repo = repo;
-						commit.pushDate = eventsObj[i].created_at;
-						commit.sha = eventsObj[i].payload.commits[j].sha;
-						commit.message = eventsObj[i].payload.commits[j].message;
-						console.log('commit',commit);
-						commitCollection.push(commit);
-					};
-				};
+			var commitCollection = transformEventData(eventsObj);
+			var arrayPromises = [];
+			for(var i in commitCollection){
+				arrayPromises.push(getCommitDetail(token,commitCollection[i].sha,commitCollection[i].repo));
 			};
-			deferred.resolve(commitCollection);
+			$q.all(arrayPromises).
+			then(function(response){
+				for(var i in response){
+					commitCollection[i].date = response[i].data.committer.date;
+					commitCollection[i].verify = response[i].data.sha == commitCollection[i].sha;
+				}
+				deferred.resolve(commitCollection);
+			},function(error){
+				deferred.reject(error);
+			});
 			return deferred.promise;
 		}
 	}
