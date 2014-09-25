@@ -17,6 +17,7 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 				for(var j in eventsObj[i].payload.commits){
 					var commit = {};
 					commit.repo = repo;
+					commit.pushId = eventsObj[i].id;
 					commit.pushDate = eventsObj[i].created_at;
 					commit.sha = eventsObj[i].payload.commits[j].sha;
 					commit.message = eventsObj[i].payload.commits[j].message;
@@ -98,6 +99,42 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 				deferred.resolve(commitCollection);
 			},function(error){
 				deferred.reject(error);
+			});
+			return deferred.promise;
+		},
+
+		//get all news commits that happend after the reference commit
+		getNewCommits : function(user,token,referenceCommit,acumulatedCommits){
+			var deferred = $q.defer();
+			var flagStop = false;
+			var limitResult = 0;
+			this.getUserEvents(user,token,1).
+			then(function(events){
+				return getCommitsFromEvents(token,events);
+			}).
+			then(function(commits){
+				for(var i in commits){
+					if(commits[i].sha == referenceCommit.sha && commits[i].pushId == referenceCommit.pushId){
+						flagStop = true;
+						limitResult = i;
+						break;
+					};
+				}
+				if(flagStop){
+					commits = truncateCommitsResult(commits,limitResult);
+					if(acumulatedCommits){
+						commits = commits.concat(acumulatedCommits);
+					};
+
+					return commits;
+				} else {
+					return getNewCommits(user,token,commits[commits.length -1]);
+				};
+			},function(err){
+				console.log('error!')
+			}).
+			then(function(newestCommits){
+				deferred.resolve(newestCommits);
 			});
 			return deferred.promise;
 		}
