@@ -1,6 +1,39 @@
 'use strict';
 
 var octoblogServices = angular.module('octoblogServices', []);
+
+// interceptor for cath commits that are not aviable on gitHub
+octoblogServices.config(['$httpProvider', function ($httpProvider) {
+
+  var $http,
+    interceptor = ['$q', '$injector', function ($q, $injector) {
+
+        function success(response) {
+            return response;
+        }
+
+        function error(response) {
+          if (response.status === 404) {
+
+            // get $http via $injector because of circular dependency problem
+            $http = $http || $injector.get('$http');
+            var defer = $q.defer();
+            response.status = 200;
+            response.data = {callError : "route no found"};
+            defer.resolve(response);
+            return defer.promise;// response;
+
+          } else {
+            return $q.reject(response);
+          }
+        }
+        return function (promise) {
+          return promise.then(success, error);
+        }
+    }];
+  $httpProvider.responseInterceptors.push(interceptor);
+}]);
+
 octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 
 	var appConfg = {
@@ -29,7 +62,7 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 	};
 
 	var getCommitDetail = function (token,sha,repo){
-		var url_req = repo.url + '/git/commits/' + sha;
+		var url_req = repo.url + '/commits/' + sha;
 		var authorization = 'token ' + token;
 		return $http({method: 'GET', url: url_req,headers : {'Authorization' : authorization}});
 	};
@@ -105,11 +138,16 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 			$q.all(arrayPromises).
 			then(function(response){
 				for(var i in response){
-					commitCollection[i].date = response[i].data.committer.date;
-					commitCollection[i].verify = response[i].data.sha == commitCollection[i].sha;
+					if(!response[i].data.callError){
+						commitCollection[i].date = response[i].data.committer.date;
+						commitCollection[i].verify = response[i].data.sha == commitCollection[i].sha;
+					} else {
+						console.log('resource not found');
+					}
 				}
 				deferred.resolve(commitCollection);
 			},function(error){
+				console.log('error :(',error);
 				deferred.reject(error);
 			});
 			return deferred.promise;
@@ -117,6 +155,7 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 
 		//get all news commits that happend after the reference commit
 		getNewestCommits : function(user,token,referenceCommit,acumulatedCommits){
+			console.log('!!!!!!!!!!!!!!!!!one iteration!!!!!!!!!!!!!!!!');
 			var deferred = $q.defer();
 			var flagStop = false;
 			var limitResult = 0;
