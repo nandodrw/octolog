@@ -34,6 +34,18 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 		return $http({method: 'GET', url: url_req,headers : {'Authorization' : authorization}});
 	};
 
+	var truncateCommitsResult = function(commits,limitResult){
+		var arr = [];
+		for(var i in commits){
+			if(i <= limitResult){
+				arr.push(commits[i]);
+			} else {
+				break
+			};
+		};
+		return arr;
+	};
+
 	return {
 		generateToken: function(user,pass){
 			var deferred = $q.defer();
@@ -104,13 +116,14 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 		},
 
 		//get all news commits that happend after the reference commit
-		getNewCommits : function(user,token,referenceCommit,acumulatedCommits){
+		getNewestCommits : function(user,token,referenceCommit,acumulatedCommits){
 			var deferred = $q.defer();
 			var flagStop = false;
 			var limitResult = 0;
+			var that = this
 			this.getUserEvents(user,token,1).
 			then(function(events){
-				return getCommitsFromEvents(token,events);
+				return that.getCommitsFromEvents(token,events);
 			}).
 			then(function(commits){
 				for(var i in commits){
@@ -128,7 +141,7 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 
 					return commits;
 				} else {
-					return getNewCommits(user,token,commits[commits.length -1]);
+					return that.getNewestCommits(user,token,commits[commits.length -1]);
 				};
 			},function(err){
 				console.log('error!')

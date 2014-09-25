@@ -29,7 +29,6 @@ function
     $location
   )
 {
-
   $scope.login = function(){
 
     githubService.generateToken($scope.user,$scope.pass).
