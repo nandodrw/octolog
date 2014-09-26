@@ -14,7 +14,6 @@ octoblogServices.config(['$httpProvider', function ($httpProvider) {
 
         function error(response) {
           if (response.status === 404) {
-
             // get $http via $injector because of circular dependency problem
             $http = $http || $injector.get('$http');
             var defer = $q.defer();
@@ -70,7 +69,7 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 	var truncateCommitsResult = function(commits,limitResult){
 		var arr = [];
 		for(var i in commits){
-			if(i <= limitResult){
+			if(i < limitResult){
 				arr.push(commits[i]);
 			} else {
 				break
@@ -139,7 +138,8 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 			then(function(response){
 				for(var i in response){
 					if(!response[i].data.callError){
-						commitCollection[i].date = response[i].data.committer.date;
+						// console.log('super important date',response[i]);
+						commitCollection[i].date = response[i].data.commit.committer.date;
 						commitCollection[i].verify = response[i].data.sha == commitCollection[i].sha;
 					} else {
 						console.log('resource not found');
@@ -154,33 +154,39 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 		},
 
 		//get all news commits that happend after the reference commit
-		getNewestCommits : function(user,token,referenceCommit,acumulatedCommits){
-			console.log('!!!!!!!!!!!!!!!!!one iteration!!!!!!!!!!!!!!!!');
+		getNewestCommits : function(user,token,referenceCommit,lastPage,acumulatedCommits){
+			if(!lastPage && lastPage != 0){
+				var pageTostart  = 1;
+			} else {
+				var pageTostart  = lastPage + 1;
+			}
 			var deferred = $q.defer();
 			var flagStop = false;
 			var limitResult = 0;
 			var that = this
-			this.getUserEvents(user,token,1).
+			this.getUserEvents(user,token,pageTostart).
 			then(function(events){
 				return that.getCommitsFromEvents(token,events);
 			}).
 			then(function(commits){
 				for(var i in commits){
-					if(commits[i].sha == referenceCommit.sha && commits[i].pushId == referenceCommit.pushId){
+					if((commits[i].sha == referenceCommit.sha) && (commits[i].pushId == referenceCommit.pushId)){
 						flagStop = true;
 						limitResult = i;
 						break;
 					};
-				}
+				};
 				if(flagStop){
 					commits = truncateCommitsResult(commits,limitResult);
 					if(acumulatedCommits){
-						commits = commits.concat(acumulatedCommits);
+						commits =	acumulatedCommits.concat(commits);
 					};
-
 					return commits;
 				} else {
-					return that.getNewestCommits(user,token,commits[commits.length -1]);
+					if(acumulatedCommits){
+						commits =	acumulatedCommits.concat(commits);
+					};
+					return that.getNewestCommits(user,token,referenceCommit,pageTostart,commits);
 				};
 			},function(err){
 				console.log('error!')

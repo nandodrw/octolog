@@ -17,11 +17,11 @@ controller('timelineCtr',['sessionService','githubService','$scope',function(ses
 
 	githubService.getUserEvents($scope.user.name,$scope.user.token,2).
 	then(function(response){
-		console.log('events object',response);
+		// console.log('events object',response);
 		return githubService.getCommitsFromEvents($scope.user.token,response);
 	}).
 	then(function(data){
-		console.log('commits',data);
+		console.log('commits page 2',data);
 		$scope.commits = data;
 		return githubService.getNewestCommits($scope.user.name,$scope.user.token,data[0]);
 	}).
@@ -30,10 +30,25 @@ controller('timelineCtr',['sessionService','githubService','$scope',function(ses
 	},function(){
 		console.log('dead');
 	});
-	console.log('commit  that should be covered!!');
+
 	githubService.getUserEvents($scope.user.name,$scope.user.token,1).
+	then(function(data){
+		return githubService.getCommitsFromEvents($scope.user.token,data);
+	}).
 	then(function(data){
 		console.log('missing commits',data);
 	});
+
+	// githubService.getUserEvents($scope.user.name,$scope.user.token,2).
+	// then(function(response){
+	// 	console.log('events object',response);
+	// 	return githubService.getCommitsFromEvents($scope.user.token,response);
+	// }).
+	// then(function(data){
+	// 	console.log('commits',data);
+	// 	$scope.commits = data;
+	// 	// return githubService.getNewestCommits($scope.user.name,$scope.user.token,data[0]);
+	// });
+
 
 }]);
