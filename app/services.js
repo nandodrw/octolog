@@ -35,11 +35,15 @@ octoblogServices.config(['$httpProvider', function ($httpProvider) {
 
 octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 
+	// i know this key shouldn't be here, for production the method
+	// used to get the token or the authenticaion should change
 	var appConfg = {
 		client_id : '4c644f97c8d114736503',
 		client_secret : "450d19e3dcfb2193aa68e45a1c0d2f422c013185"
 	};
 
+	//help function to manipulate the data obteined from the GitHub
+	//event API
 	var transformEventData = function (eventsObj){
 		var commitCollection = [];
 		for(var i in eventsObj){
@@ -60,12 +64,16 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 		return commitCollection;
 	};
 
+	//get detail of a scpecift commit from GitHub API, retuns a promisse
 	var getCommitDetail = function (token,sha,repo){
 		var url_req = repo.url + '/commits/' + sha;
 		var authorization = 'token ' + token;
 		return $http({method: 'GET', url: url_req,headers : {'Authorization' : authorization}});
 	};
 
+	//helper function to that recive a list of commits and retuns a
+	// a subset of that list. the LimitResult parameter determines the
+	// subset's limit
 	var truncateCommitsResult = function(commits,limitResult){
 		var arr = [];
 		for(var i in commits){
@@ -78,7 +86,10 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 		return arr;
 	};
 
+	//public functions on the githubService service
 	return {
+
+		//get or create a token for the user
 		generateToken: function(user,pass){
 			var deferred = $q.defer();
 			var url_req = 'https://api.github.com/authorizations/clients/' + appConfg.client_id;
@@ -102,6 +113,11 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 	    return deferred.promise;
 		},
 
+		//Get the list of event performed by the user while  interacting
+		//whit github. The data page paremeter allows to call ans specific
+		//page (300 max pages, according github pagination for the event API)
+		//On the success scenario, the function also returns pagination information
+		//object
 		getUserEvents: function(user,token,dataPage){
 			var deferred = $q.defer();
 			var url_req = 'https://api.github.com/users/' + user + '/events';
@@ -127,6 +143,9 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 	    return deferred.promise;
 		},
 
+		// since the list of event can return sha codes for commits (on push eventes)
+		// but doesn't return any other aditional data about commits, the folloging function
+		// is neccessary to get aditinal data for each commit
 		getCommitsFromEvents: function(token,eventsObj){
 			var deferred = $q.defer();
 			var commitCollection = transformEventData(eventsObj);
@@ -154,6 +173,8 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 		},
 
 		//get all news commits that happend after the reference commit
+		// TODO: add security mechanisim if is not possible to link the last commit
+		// aviable and all the commits accesible from the github event API (limited number of events are recorded)
 		getNewestCommits : function(user,token,referenceCommit,lastPage,acumulatedCommits){
 			if(!lastPage && lastPage != 0){
 				var pageTostart  = 1;
@@ -199,6 +220,7 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 	}
 }]);
 
+// service to DB storage
 octoblogServices.factory('dataService',['$q',function($q){
 
 	var localStorage = {};
