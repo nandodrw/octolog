@@ -1,0 +1,12 @@
+<select ng-model="selectedRepo" ng-options="repo.name for repo in repos"></select>
+<a href="" class="load-previus-commits">load Previus</a>
+<div class="commit-list-container">
+	<div class="commitlist" ng-repeat="commit in commitList">
+		<div class="eventList">
+			<div class="eventElement" ng-repeat="event in commit.events">
+
+			</div>
+		</div>
+	</div>
+</div>
+<a href="" class="refresh-button"> refesh </a>
