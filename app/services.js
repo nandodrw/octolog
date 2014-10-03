@@ -240,7 +240,6 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 		    		aux.message = data[i].commit.message;
 		    		aux.pushDate = undefined;
 		    		aux.pushId = undefined;
-		    		window.a = data[i].url;
 		    		aux.repo = {
 		    			id: undefined,
 		    			name: data[i].url.substring(29,data[i].url.lastIndexOf('/commits/')),
@@ -248,7 +247,7 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 		    		};
 		    		aux.sha = data[i].sha
 		    		aux.verify = true;
-		    		listCommits.push(aux);
+		    		if(i > 0){listCommits.push(aux)};
 		    	};
 		    	deferred.resolve(listCommits);
 	    	} else {
