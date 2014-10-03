@@ -216,6 +216,49 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 				deferred.resolve(newestCommits);
 			});
 			return deferred.promise;
+		},
+
+		// get the list of commits performed by the user on a
+		//specifict repo(repo reference is inside the referenceCommit parameter)
+		//before a reference commit
+		getCommitsFromRepo : function(user,token,referenceCommit){
+			console.log('reference commit',referenceCommit);
+			var deferred = $q.defer();
+			var url_req = referenceCommit.repo.url + '/commits';
+			var params_req = {
+	    	author : user,
+	    	until : referenceCommit.date
+	    };
+	    var authorization = 'token ' + token;
+	    $http({method: 'GET', url: url_req,headers : {'Authorization' : authorization}, params : params_req}).
+	    success(function(data){
+	    	if(data.length > 1){
+	    		var listCommits = [];
+	    		for(var i in data){
+		    		var aux = {};
+		    		aux.date = data[i].commit.committer.date;
+		    		aux.message = data[i].commit.message;
+		    		aux.pushDate = undefined;
+		    		aux.pushId = undefined;
+		    		window.a = data[i].url;
+		    		aux.repo = {
+		    			id: undefined,
+		    			name: data[i].url.substring(29,data[i].url.lastIndexOf('/commits/')),
+		    			url: data[i].url.substring(0,data[i].url.lastIndexOf('/commits/'))
+		    		};
+		    		aux.sha = data[i].sha
+		    		aux.verify = true;
+		    		listCommits.push(aux);
+		    	};
+		    	deferred.resolve(listCommits);
+	    	} else {
+	    		deferred.resolve([]);
+	    	};
+	    }).
+	    error(function(err){
+	    	deferred.reject(err);
+	    });
+	    return deferred.promise;
 		}
 	}
 }]);
