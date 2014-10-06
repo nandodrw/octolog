@@ -87,4 +87,15 @@ controller('testTimelineCtr',['sessionService','githubService','dataService','in
     });
   };
 
+  $scope.loadPreviousCommits = function(selectedRepo){
+    githubService.getCommitsFromRepo($scope.user.name,$scope.user.token,
+      $scope.commitList[$scope.commitList.length-1]).
+    then(function(response){
+      return dataService.storeCommits($scope.user.name,response);
+    }).
+    then(function(response){
+      $scope.commitList = $scope.commitList.concat(response);
+    });
+  };
+
 }]);
