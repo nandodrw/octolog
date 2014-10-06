@@ -17,6 +17,7 @@
   "dependencies": {
     "angular": "^1.2.23",
     "angular-route": "^1.2.17-build.163.1",
+    "nedb": "^0.11.1",
     "octonode": "^0.6.5"
   },
   "devDependencies": {
