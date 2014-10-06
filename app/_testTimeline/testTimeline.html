@@ -1,7 +1,8 @@
-<select ng-model="selectedRepo" ng-options="repo.name for repo in repos"></select>
+<select ng-model="selectedRepo" ng-options="repo.name for repo in repos" ng-change="getCommits(selectedRepo)"><option value="">-- Select repo --</option></select>
 <a href="" class="load-previus-commits">load Previus</a>
 <div class="commit-list-container">
 	<div class="commitlist" ng-repeat="commit in commitList">
+		{{commit}}
 		<div class="eventList">
 			<div class="eventElement" ng-repeat="event in commit.events">
 
