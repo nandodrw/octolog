@@ -2,3 +2,4 @@
 /.divshot-cache
 /node-webkit.app
 tasks.txt
+/app/db
