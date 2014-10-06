@@ -262,43 +262,22 @@ octoblogServices.factory('githubService', ['$http','$q',function($http,$q) {
 	}
 }]);
 
-// service to DB storage
-octoblogServices.factory('dataService',['$q',function($q){
-
-	var localStorage = {};
-
+octoblogServices.factory('infoManipulation',['$q',function($q){
 	return {
-
-		storeToken : function(user,token){
+		getReposFromCommits : function(commits){
+			console.log('commits!',commits);
 			var deferred = $q.defer();
-			if(user && token){
-				localStorage[user] = token
-				deferred.resolve(localStorage);
-			} else {
-				deferred.reject('error!');
+			var hashRepos = {};
+			var arrRepos = [];
+			for (var i in commits){
+				if(!hashRepos[commits[i].repo.name]){
+					arrRepos.push({name : commits[i].repo.name});
+					hashRepos[commits[i].repo.name] = true;
+				}
 			}
+			deferred.resolve(arrRepos);
 			return deferred.promise;
-		},
-
-		getToken : function(){
-			var deferred = $q.defer();
-			if (localStorage[user]) {
-				deferred.resolve(localStorage[user]);
-			} else{
-				deferred.reject('error!');
-			}
-			return deferred.promise;
-		}
-	};
-}]);
-
-octoblogServices.factory('sessionService',function(){
-	return {
-		currentUser : {
-			name : "",
-			token : ""
 		}
 	}
-});
-
+}]);
 
