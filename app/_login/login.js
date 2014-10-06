@@ -37,6 +37,7 @@ function
       sessionService.currentUser.token = response.token;
       return dataService.storeToken($scope.user,response.token);
     },function(err){
+      console.log('err',err)
       return false;
     }).
     then(function(response){
