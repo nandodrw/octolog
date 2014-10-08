@@ -44,7 +44,7 @@ octoblogServices.factory('dataService',['$q',function($q){
 
 		getToken : function(user){
 			var deferred = $q.defer();
-			db.user.find({ user: user }, function (err, docs) {
+			db.user.find({ user: user }).sort({user : 1}).exec(function (err, docs) {
 				if(err){
 					deferred.reject('Error geting token',err);
 				} else {
@@ -59,7 +59,7 @@ octoblogServices.factory('dataService',['$q',function($q){
 			var deferred = $q.defer();
 			userReposDb = user + 'Repos';
 			console.log('db',db);
-			db[userReposDb].find({}, function (err, docs) {
+			db[userReposDb].find({}).sort({name : 1}).exec(function (err, docs) {
 				if (err) {
 					deferred.reject('err');
 				} else {
@@ -102,7 +102,7 @@ octoblogServices.factory('dataService',['$q',function($q){
 		getCommits : function(user,repo){
 			var deferred = $q.defer();
 			userCommitsDb = user + 'Commits';
-			db[userCommitsDb].find({ 'repo.name': repo }, function (err, docs) {
+			db[userCommitsDb].find({ 'repo.name': repo }).sort({date : -1}).exec(function (err, docs) {
 				if (err) {
 					deferred.reject(err);
 				} else {
